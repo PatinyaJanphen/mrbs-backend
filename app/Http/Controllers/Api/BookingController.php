@@ -11,13 +11,22 @@ class BookingController extends Controller
 {
     public function __construct(
         protected BookingService $bookingService
-    ) {}
+    ) {
+    }
 
     public function index(Request $request)
     {
         return $this->bookingService->list(
             $request->user()->company_id,
             $request->all()
+        );
+    }
+
+    public function show(Request $request, int $id)
+    {
+        return $this->bookingService->getById(
+            $request->user()->company_id,
+            $id
         );
     }
 

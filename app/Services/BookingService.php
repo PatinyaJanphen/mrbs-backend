@@ -10,6 +10,13 @@ use Illuminate\Validation\ValidationException;
 
 class BookingService
 {
+    public function getById(int $companyId, int $id): Booking
+    {
+        return Booking::with(['resource', 'user'])
+            ->where('company_id', $companyId)
+            ->findOrFail($id);
+    }
+
     public function list(int $companyId, array $filters = []): LengthAwarePaginator
     {
         $query = Booking::with(['resource', 'user'])
@@ -56,13 +63,13 @@ class BookingService
     {
         $collision = Booking::where('resource_id', $resourceId)
             ->where('status', '!=', 'cancelled')
-            ->where(function($q) use ($start, $end) {
+            ->where(function ($q) use ($start, $end) {
                 $q->whereBetween('start_time', [$start, $end])
-                  ->orWhereBetween('end_time', [$start, $end])
-                  ->orWhere(function($sub) use ($start, $end) {
-                      $sub->where('start_time', '<=', $start)
-                          ->where('end_time', '>=', $end);
-                  });
+                    ->orWhereBetween('end_time', [$start, $end])
+                    ->orWhere(function ($sub) use ($start, $end) {
+                        $sub->where('start_time', '<=', $start)
+                            ->where('end_time', '>=', $end);
+                    });
             })->exists();
 
         if ($collision) {
