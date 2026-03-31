@@ -12,7 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, \App\Traits\UserStamps;
 
     protected $fillable = [
         'company_id',
@@ -33,7 +33,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            // Add casts as needed
+            'role' => 'integer',
         ];
     }
 

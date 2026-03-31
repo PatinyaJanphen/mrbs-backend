@@ -55,7 +55,7 @@ class BookingController extends Controller
             $request->user()->company_id,
             $request->user()->id,
             $id,
-            $request->user()->role === 'admin'
+            $request->user()->role <= 1
         );
 
         return $booking;

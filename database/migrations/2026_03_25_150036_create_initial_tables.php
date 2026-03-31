@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -17,21 +16,31 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('domain')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
         });
 
         // 2. Table users
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
             $table->string('name');
             $table->string('email')->unique();
             $table->string('google_id')->unique();
             $table->string('avatar')->nullable();
             $table->text('google_access_token')->nullable();
             $table->text('google_refresh_token')->nullable();
-            $table->string('role')->default('user'); // admin, hr, manager, user
+            $table->tinyInteger('role')->default(3); // 0: super_admin, 1: admin, 2: staff, 3: user
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
+        });
+
+        // Add foreign keys for companies table now that users table exists
+        Schema::table('companies', function (Blueprint $table) {
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
         });
 
         // 3. Table resources
@@ -44,6 +53,8 @@ return new class extends Migration
             $table->jsonb('equipment')->nullable();
             $table->boolean('is_active')->default(true);
             $table->boolean('requires_approval')->default(false);
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -70,9 +81,11 @@ return new class extends Migration
             $table->string('title');
             $table->dateTimeTz('start_time'); // ระบุ Timezone ป้องกันเวลาเพี้ยน
             $table->dateTimeTz('end_time');
-            $table->string('status')->default('pending'); // pending, confirmed, cancelled
+            $table->tinyInteger('status')->default(0); // 0: pending, 1: confirmed, 2: cancelled
             $table->foreignId('approved_by')->nullable()->constrained('users')->onDelete('set null');
             $table->string('google_event_id')->nullable()->unique();
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
 
@@ -88,7 +101,9 @@ return new class extends Migration
             $table->foreignId('booking_id')->constrained('bookings')->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('guest_email')->nullable();
-            $table->string('status')->default('pending'); // pending, accepted, declined
+            $table->tinyInteger('status')->default(0); // 0: pending, 1: accepted, 2: declined
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
 
@@ -103,7 +118,7 @@ return new class extends Migration
             $table->jsonb('properties')->nullable();
             $table->string('ip_address')->nullable();
             $table->timestamps();
-            
+
             $table->index(['subject_type', 'subject_id']);
         });
     }
@@ -117,10 +132,10 @@ return new class extends Migration
         Schema::dropIfExists('booking_attendees');
         Schema::dropIfExists('bookings');
         Schema::dropIfExists('resource_operating_hours');
-        
+
         DB::statement('DROP INDEX IF EXISTS resources_equipment_gin');
         Schema::dropIfExists('resources');
-        
+
         Schema::dropIfExists('users');
         Schema::dropIfExists('companies');
     }

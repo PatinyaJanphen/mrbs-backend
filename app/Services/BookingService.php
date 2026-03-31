@@ -55,14 +55,14 @@ class BookingService
             'title' => $data['title'],
             'start_time' => Carbon::parse($data['start_time']),
             'end_time' => Carbon::parse($data['end_time']),
-            'status' => $resource->requires_approval ? 'pending' : 'confirmed',
+            'status' => $resource->requires_approval ? 0 : 1,
         ]);
     }
 
     private function checkCollision(int $resourceId, $start, $end): void
     {
         $collision = Booking::where('resource_id', $resourceId)
-            ->where('status', '!=', 'cancelled')
+            ->where('status', '!=', 2)
             ->where(function ($q) use ($start, $end) {
                 $q->whereBetween('start_time', [$start, $end])
                     ->orWhereBetween('end_time', [$start, $end])
@@ -87,7 +87,7 @@ class BookingService
             abort(403, 'Unauthorized');
         }
 
-        $booking->update(['status' => 'cancelled']);
+        $booking->update(['status' => 2]);
         return $booking;
     }
 }

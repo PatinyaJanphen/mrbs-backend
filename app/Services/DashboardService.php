@@ -18,10 +18,10 @@ class DashboardService
             'total_rooms' => Resource::where('company_id', $companyId)->count(),
             'today_bookings' => Booking::where('company_id', $companyId)
                 ->whereDate('start_time', $today)
-                ->where('status', '!=', 'cancelled')
+                ->where('status', '!=', 2)
                 ->count(),
             'active_bookings' => Booking::where('company_id', $companyId)
-                ->where('status', 'confirmed')
+                ->where('status', 1)
                 ->where('start_time', '<=', $now)
                 ->where('end_time', '>=', $now)
                 ->count(),

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BookingAttendee extends Model
 {
+    use \App\Traits\UserStamps;
+
     protected $fillable = [
         'booking_id',
         'user_id',
