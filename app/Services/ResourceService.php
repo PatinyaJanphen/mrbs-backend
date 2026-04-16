@@ -39,4 +39,11 @@ class ResourceService
     {
         return Resource::where('company_id', $companyId)->findOrFail($id);
     }
+
+    public function update(int $companyId, int $id, array $data): Resource
+    {
+        $resource = $this->getById($companyId, $id);
+        $resource->update($data);
+        return $resource;
+    }
 }

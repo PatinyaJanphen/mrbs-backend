@@ -38,4 +38,15 @@ class ResourceController extends Controller
 
         return response()->json($resource, 201);
     }
+
+    public function update(StoreResourceRequest $request, int $id)
+    {
+        $resource = $this->resourceService->update(
+            $request->user()->company_id,
+            $id,
+            $request->validated()
+        );
+
+        return response()->json($resource);
+    }
 }

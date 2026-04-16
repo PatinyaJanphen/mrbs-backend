@@ -18,7 +18,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get(
         '/auth/me',
         function (Request $request) {
-            return $request->user();
+            $user = $request->user();
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'avatar' => $user->avatar,
+                'role' => (int) $user->role,
+                'company_id' => $user->company_id,
+            ];
         }
     );
 
@@ -32,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/rooms', [ResourceController::class, 'index']);
     Route::get('/rooms/{id}', [ResourceController::class, 'show']);
     Route::post('/rooms', [ResourceController::class, 'store']); // Admin only ideally
+    Route::put('/rooms/{id}', [ResourceController::class, 'update']);
 
     // Booking Routes
     Route::get('/bookings', [BookingController::class, 'index']);
