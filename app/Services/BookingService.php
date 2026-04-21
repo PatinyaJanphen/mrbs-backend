@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Resource;
+use App\Notifications\BookingConfirmationNotification;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
@@ -67,27 +68,63 @@ class BookingService
             'end_time' => $booking->end_time,
         ]);
 
+        // If auto-approved, send confirmation email
+        if ($booking->status === 1) {
+            $booking->user->notify(new BookingConfirmationNotification($booking));
+        }
+
         return $booking;
     }
 
-    private function checkCollision(int $resourceId, $start, $end): void
+    private function checkCollision(int $resourceId, $start, $end, $excludeId = null): void
     {
-        $collision = Booking::where('resource_id', $resourceId)
-            ->where('status', '!=', 2)
-            ->where(function ($q) use ($start, $end) {
-                $q->whereBetween('start_time', [$start, $end])
-                    ->orWhereBetween('end_time', [$start, $end])
-                    ->orWhere(function ($sub) use ($start, $end) {
-                        $sub->where('start_time', '<=', $start)
-                            ->where('end_time', '>=', $end);
-                    });
-            })->exists();
+        $query = Booking::where('resource_id', $resourceId)
+            ->whereIn('status', [0, 1]); // Only check against pending or confirmed
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        $collision = $query->where(function ($q) use ($start, $end) {
+            $q->whereBetween('start_time', [$start, $end])
+                ->orWhereBetween('end_time', [$start, $end])
+                ->orWhere(function ($sub) use ($start, $end) {
+                    $sub->where('start_time', '<=', $start)
+                        ->where('end_time', '>=', $end);
+                });
+        })->exists();
 
         if ($collision) {
             throw ValidationException::withMessages([
                 'start_time' => ['ช่วงเวลานี้มีการจองอยู่แล้ว'],
             ]);
         }
+    }
+
+    public function approve(int $companyId, int $bookingId): Booking
+    {
+        $booking = Booking::where('company_id', $companyId)->findOrFail($bookingId);
+
+        // Final check for collisions before approving
+        $this->checkCollision($booking->resource_id, $booking->start_time, $booking->end_time, $booking->id);
+
+        $booking->update(['status' => 1]);
+
+        $this->logActivity('booking_approved', $booking);
+
+        // Send confirmation email
+        $booking->user->notify(new BookingConfirmationNotification($booking));
+
+        return $booking;
+    }
+
+    public function reject(int $companyId, int $bookingId): Booking
+    {
+        $booking = Booking::where('company_id', $companyId)->findOrFail($bookingId);
+        $booking->update(['status' => 2]);
+        $this->logActivity('booking_rejected', $booking);
+
+        return $booking;
     }
 
     public function cancel(int $companyId, int $userId, int $bookingId, bool $isAdmin = false): Booking

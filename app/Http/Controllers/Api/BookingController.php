@@ -97,4 +97,36 @@ class BookingController extends Controller
             'data' => $booking->load('resource')
         ], 200);
     }
+
+    /**
+     * Approve a booking
+     */
+    public function approve(Request $request, int $id): JsonResponse
+    {
+        $booking = $this->bookingService->approve(
+            $request->user()->company_id,
+            $id
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => $booking->load('resource')
+        ], 200);
+    }
+
+    /**
+     * Reject a booking
+     */
+    public function reject(Request $request, int $id): JsonResponse
+    {
+        $booking = $this->bookingService->reject(
+            $request->user()->company_id,
+            $id
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => $booking->load('resource')
+        ], 200);
+    }
 }
