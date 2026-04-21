@@ -4,12 +4,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\EmailAuthController;
 
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\BookingController;
 
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+Route::post('/auth/login', [EmailAuthController::class, 'login']);
+Route::post('/auth/forgot-password', [EmailAuthController::class, 'forgotPassword']);
+Route::post('/auth/reset-password', [EmailAuthController::class, 'resetPassword']);
 
 use App\Http\Controllers\Api\DashboardController;
 

@@ -23,9 +23,11 @@ class User extends Authenticatable
         'google_access_token',
         'google_refresh_token',
         'role',
+        'password',
     ];
 
     protected $hidden = [
+        'password',
         'google_access_token',
         'google_refresh_token',
     ];
@@ -34,6 +36,7 @@ class User extends Authenticatable
     {
         return [
             'role' => 'integer',
+            'password' => 'hashed',
         ];
     }
 
@@ -50,5 +53,16 @@ class User extends Authenticatable
     public function approvedBookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'approved_by');
+    }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
     }
 }

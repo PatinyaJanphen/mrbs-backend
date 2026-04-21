@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\Resource;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -36,6 +37,7 @@ class DatabaseSeeder extends Seeder
                 'name' => $r['name'],
                 'email' => $r['email'],
                 'google_id' => 'mock_' . str_replace('@demo.com', '', $r['email']),
+                'password' => Hash::make('password'),
                 'role' => $r['role'],
                 'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($r['name']) . '&background=random',
             ]);
