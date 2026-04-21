@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBookingRequest;
 use App\Services\BookingService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -14,31 +15,58 @@ class BookingController extends Controller
     ) {
     }
 
-    public function index(Request $request)
+    /**
+     * Display a listing of the booking.
+     */
+    public function index(Request $request): JsonResponse
     {
-        return $this->bookingService->list(
+        $bookings = $this->bookingService->list(
             $request->user()->company_id,
             $request->all()
         );
+
+        return response()->json([
+            'success' => true,
+            'data' => $bookings
+        ], 200);
     }
 
-    public function show(Request $request, int $id)
+    /**
+     * Show the form for creating a new booking.
+     */
+    public function show(Request $request, int $id): JsonResponse
     {
-        return $this->bookingService->getById(
+        $bookings = $this->bookingService->getById(
             $request->user()->company_id,
             $id
         );
+
+        return response()->json([
+            'success' => true,
+            'data' => $bookings
+        ], 200);
     }
 
-    public function myBookings(Request $request)
+    /**
+     * Show all my bookings
+     */
+    public function myBookings(Request $request): JsonResponse
     {
-        return $this->bookingService->listByUser(
+        $bookings = $this->bookingService->listByUser(
             $request->user()->company_id,
             $request->user()->id
         );
+
+        return response()->json([
+            'success' => true,
+            'data' => $bookings
+        ], 200);
     }
 
-    public function store(StoreBookingRequest $request)
+    /**
+     * Store a newly created resource in booking.
+     */
+    public function store(StoreBookingRequest $request): JsonResponse
     {
         $booking = $this->bookingService->create(
             $request->user()->company_id,
@@ -46,10 +74,16 @@ class BookingController extends Controller
             $request->validated()
         );
 
-        return response()->json($booking->load('resource'), 201);
+        return response()->json([
+            'success' => true,
+            'data' => $booking->load('resource')
+        ], 201);
     }
 
-    public function cancel(Request $request, int $id)
+    /**
+     * Cancel a booking
+     */
+    public function cancel(Request $request, int $id): JsonResponse
     {
         $booking = $this->bookingService->cancel(
             $request->user()->company_id,
@@ -58,6 +92,9 @@ class BookingController extends Controller
             $request->user()->role <= 1
         );
 
-        return $booking;
+        return response()->json([
+            'success' => true,
+            'data' => $booking->load('resource')
+        ], 200);
     }
 }

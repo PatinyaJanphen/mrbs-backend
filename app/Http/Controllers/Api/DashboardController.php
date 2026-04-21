@@ -15,6 +15,9 @@ class DashboardController extends Controller
     public function stats(Request $request)
     {
         $stats = $this->dashboardService->getStats($request->user()->company_id);
-        return response()->json($stats);
+        return response()->json([
+            'success' => true,
+            'data' => $stats
+        ]);
     }
 }

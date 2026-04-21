@@ -21,8 +21,8 @@ class CompanyController extends Controller
      */
     public function index(): JsonResponse
     {
-        $companies = $this->companyService->getAllCompanies();
-        
+        $companies = $this->companyService->list();
+
         return response()->json([
             'success' => true,
             'data' => $companies
@@ -34,11 +34,10 @@ class CompanyController extends Controller
      */
     public function store(StoreCompanyRequest $request): JsonResponse
     {
-        $company = $this->companyService->createCompany($request->validated());
+        $company = $this->companyService->create($request->validated());
 
         return response()->json([
             'success' => true,
-            'message' => 'สร้างบริษัทสำเร็จ!',
             'data' => $company
         ], 201);
     }

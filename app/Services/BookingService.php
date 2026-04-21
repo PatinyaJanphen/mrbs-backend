@@ -7,9 +7,12 @@ use App\Models\Resource;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
+use App\Traits\LogsActivity;
 
 class BookingService
 {
+    use LogsActivity;
+
     public function getById(int $companyId, int $id): Booking
     {
         return Booking::with(['resource', 'user'])
@@ -48,7 +51,7 @@ class BookingService
 
         $this->checkCollision($data['resource_id'], $data['start_time'], $data['end_time']);
 
-        return Booking::create([
+        $booking = Booking::create([
             'company_id' => $companyId,
             'user_id' => $userId,
             'resource_id' => $data['resource_id'],
@@ -57,6 +60,14 @@ class BookingService
             'end_time' => Carbon::parse($data['end_time']),
             'status' => $resource->requires_approval ? 0 : 1,
         ]);
+
+        $this->logActivity('booking_created', $booking, [
+            'resource_id' => $booking->resource_id,
+            'start_time' => $booking->start_time,
+            'end_time' => $booking->end_time,
+        ]);
+
+        return $booking;
     }
 
     private function checkCollision(int $resourceId, $start, $end): void
@@ -88,6 +99,11 @@ class BookingService
         }
 
         $booking->update(['status' => 2]);
+
+        $this->logActivity('booking_cancelled', $booking, [
+            'id' => $bookingId,
+        ]);
+
         return $booking;
     }
 }
