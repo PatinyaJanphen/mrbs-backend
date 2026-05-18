@@ -22,6 +22,7 @@ class Booking extends Model
         'status',
         'approved_by',
         'google_event_id',
+        'reject_reason',
     ];
 
     protected function casts(): array

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Booking;
 use App\Models\Resource;
 use App\Notifications\BookingConfirmationNotification;
+use App\Notifications\BookingRejectionNotification;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
@@ -118,11 +119,19 @@ class BookingService
         return $booking;
     }
 
-    public function reject(int $companyId, int $bookingId): Booking
+    public function reject(int $companyId, int $bookingId, string $rejectReason): Booking
     {
         $booking = Booking::where('company_id', $companyId)->findOrFail($bookingId);
-        $booking->update(['status' => 2]);
-        $this->logActivity('booking_rejected', $booking);
+        $booking->update([
+            'status' => 2,
+            'reject_reason' => $rejectReason
+        ]);
+        
+        $this->logActivity('booking_rejected', $booking, [
+            'reject_reason' => $rejectReason
+        ]);
+
+        $booking->user->notify(new BookingRejectionNotification($booking, $rejectReason));
 
         return $booking;
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBookingRequest;
+use App\Http\Requests\RejectBookingRequest;
 use App\Services\BookingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -117,11 +118,12 @@ class BookingController extends Controller
     /**
      * Reject a booking
      */
-    public function reject(Request $request, int $id): JsonResponse
+    public function reject(RejectBookingRequest $request, int $id): JsonResponse
     {
         $booking = $this->bookingService->reject(
             $request->user()->company_id,
-            $id
+            $id,
+            $request->validated()['reject_reason']
         );
 
         return response()->json([
