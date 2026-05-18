@@ -9,7 +9,9 @@ use App\Notifications\BookingRejectionNotification;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Gate;
 use App\Traits\LogsActivity;
+use App\Enums\BookingStatus;
 
 class BookingService
 {
@@ -60,7 +62,7 @@ class BookingService
             'title' => $data['title'],
             'start_time' => Carbon::parse($data['start_time']),
             'end_time' => Carbon::parse($data['end_time']),
-            'status' => $resource->requires_approval ? 0 : 1,
+            'status' => $resource->requires_approval ? BookingStatus::PENDING : BookingStatus::APPROVED,
         ]);
 
         $this->logActivity('booking_created', $booking, [
@@ -70,7 +72,7 @@ class BookingService
         ]);
 
         // If auto-approved, send confirmation email
-        if ($booking->status === 1) {
+        if ($booking->status === BookingStatus::APPROVED) {
             $booking->user->notify(new BookingConfirmationNotification($booking));
         }
 
@@ -80,7 +82,7 @@ class BookingService
     private function checkCollision(int $resourceId, $start, $end, $excludeId = null): void
     {
         $query = Booking::where('resource_id', $resourceId)
-            ->whereIn('status', [0, 1]); // Only check against pending or confirmed
+            ->whereIn('status', [BookingStatus::PENDING, BookingStatus::APPROVED]); // Only check against pending or confirmed
 
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
@@ -105,11 +107,13 @@ class BookingService
     public function approve(int $companyId, int $bookingId): Booking
     {
         $booking = Booking::where('company_id', $companyId)->findOrFail($bookingId);
+        
+        Gate::authorize('approve', $booking);
 
         // Final check for collisions before approving
         $this->checkCollision($booking->resource_id, $booking->start_time, $booking->end_time, $booking->id);
 
-        $booking->update(['status' => 1]);
+        $booking->update(['status' => BookingStatus::APPROVED]);
 
         $this->logActivity('booking_approved', $booking);
 
@@ -122,8 +126,11 @@ class BookingService
     public function reject(int $companyId, int $bookingId, string $rejectReason): Booking
     {
         $booking = Booking::where('company_id', $companyId)->findOrFail($bookingId);
+        
+        Gate::authorize('reject', $booking);
+        
         $booking->update([
-            'status' => 2,
+            'status' => BookingStatus::REJECTED,
             'reject_reason' => $rejectReason
         ]);
         
@@ -136,15 +143,13 @@ class BookingService
         return $booking;
     }
 
-    public function cancel(int $companyId, int $userId, int $bookingId, bool $isAdmin = false): Booking
+    public function cancel(int $companyId, int $bookingId): Booking
     {
         $booking = Booking::where('company_id', $companyId)->findOrFail($bookingId);
 
-        if (!$isAdmin && $booking->user_id !== $userId) {
-            abort(403, 'Unauthorized');
-        }
+        Gate::authorize('cancel', $booking);
 
-        $booking->update(['status' => 2]);
+        $booking->update(['status' => BookingStatus::REJECTED]);
 
         $this->logActivity('booking_cancelled', $booking, [
             'id' => $bookingId,
