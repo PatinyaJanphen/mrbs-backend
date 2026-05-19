@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreBookingRequest;
-use App\Http\Requests\RejectBookingRequest;
+use App\Http\Requests\Booking\StoreBookingRequest;
+use App\Http\Requests\Booking\RejectBookingRequest;
 use App\Http\Resources\BookingResource;
 use App\Services\BookingService;
 use Illuminate\Http\JsonResponse;

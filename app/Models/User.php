@@ -24,6 +24,8 @@ class User extends Authenticatable
         'google_refresh_token',
         'role',
         'password',
+        'phone',
+        'department',
     ];
 
     protected $hidden = [

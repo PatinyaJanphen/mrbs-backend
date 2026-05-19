@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\EmailAuthController;
 
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\ProfileController;
 
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
@@ -30,11 +31,17 @@ Route::middleware('auth:sanctum')->group(function () {
                 'avatar' => $user->avatar,
                 'role' => (int) $user->role,
                 'company_id' => $user->company_id,
+                'phone' => $user->phone,
+                'department' => $user->department,
             ];
         }
     );
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
+    // Profile Routes
+    Route::post('/profile', [ProfileController::class, 'update']);
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
 
     // Company Routes
     Route::get('/companies', [CompanyController::class, 'index']);

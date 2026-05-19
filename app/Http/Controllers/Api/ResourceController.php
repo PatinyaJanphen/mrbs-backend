@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreResourceRequest;
+use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Services\ResourceService;
 use Illuminate\Http\Request;
 
