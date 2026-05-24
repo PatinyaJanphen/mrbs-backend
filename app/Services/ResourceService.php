@@ -10,9 +10,13 @@ class ResourceService
 {
     use LogsActivity;
 
-    public function list(int $companyId, array $filters = []): LengthAwarePaginator
+    public function list(?int $companyId, array $filters = []): LengthAwarePaginator
     {
-        $query = Resource::where('company_id', $companyId);
+        $query = Resource::query();
+
+        if ($companyId !== null) {
+            $query->where('company_id', $companyId);
+        }
 
         if (isset($filters['search'])) {
             $search = $filters['search'];
@@ -30,7 +34,7 @@ class ResourceService
         return $query->paginate($filters['per_page'] ?? 20);
     }
 
-    public function create(int $companyId, array $data): Resource
+    public function create(?int $companyId, array $data): Resource
     {
         $resource = Resource::create(array_merge($data, [
             'company_id' => $companyId,
@@ -42,12 +46,16 @@ class ResourceService
         return $resource;
     }
 
-    public function getById(int $companyId, int $id): Resource
+    public function getById(?int $companyId, int $id): Resource
     {
-        return Resource::where('company_id', $companyId)->findOrFail($id);
+        $query = Resource::query();
+        if ($companyId !== null) {
+            $query->where('company_id', $companyId);
+        }
+        return $query->findOrFail($id);
     }
 
-    public function update(int $companyId, int $id, array $data): Resource
+    public function update(?int $companyId, int $id, array $data): Resource
     {
         $resource = $this->getById($companyId, $id);
         $resource->update($data);
