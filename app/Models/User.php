@@ -11,6 +11,11 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
+    public const ROLE_SUPER_ADMIN = 0;
+    public const ROLE_ADMIN = 1;
+    public const ROLE_STAFF = 2;
+    public const ROLE_USER = 3;
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, \App\Traits\UserStamps;
 
@@ -23,6 +28,7 @@ class User extends Authenticatable
         'google_access_token',
         'google_refresh_token',
         'role',
+        'is_active',
         'password',
         'phone',
         'department',
@@ -38,6 +44,7 @@ class User extends Authenticatable
     {
         return [
             'role' => 'integer',
+            'is_active' => 'boolean',
             'password' => 'hashed',
         ];
     }

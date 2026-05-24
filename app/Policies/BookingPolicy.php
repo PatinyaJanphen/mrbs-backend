@@ -36,8 +36,8 @@ class BookingPolicy
      */
     public function approve(User $user, Booking $booking): bool
     {
-        // Must be in the same company and have admin role (role <= 1)
-        return $user->company_id === $booking->company_id && $user->role <= 1;
+        // Must be in the same company and have admin role (role <= User::ROLE_ADMIN)
+        return $user->company_id === $booking->company_id && $user->role <= User::ROLE_ADMIN;
     }
 
     /**
@@ -45,8 +45,8 @@ class BookingPolicy
      */
     public function reject(User $user, Booking $booking): bool
     {
-        // Must be in the same company and have admin role (role <= 1)
-        return $user->company_id === $booking->company_id && $user->role <= 1;
+        // Must be in the same company and have admin role (role <= User::ROLE_ADMIN)
+        return $user->company_id === $booking->company_id && $user->role <= User::ROLE_ADMIN;
     }
 
     /**
@@ -60,6 +60,6 @@ class BookingPolicy
         }
 
         // Can cancel if they are the owner OR if they are an admin
-        return $user->id === $booking->user_id || $user->role <= 1;
+        return $user->id === $booking->user_id || $user->role <= User::ROLE_ADMIN;
     }
 }

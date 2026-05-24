@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\EmailAuthController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\UserController;
 
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
@@ -19,7 +20,7 @@ Route::post('/auth/reset-password', [EmailAuthController::class, 'resetPassword'
 use App\Http\Controllers\Api\DashboardController;
 
 // Protected Routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'active.user'])->group(function () {
     Route::get(
         '/auth/me',
         function (Request $request) {
@@ -30,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 'email' => $user->email,
                 'avatar' => $user->avatar,
                 'role' => (int) $user->role,
+                'is_active' => $user->is_active,
                 'company_id' => $user->company_id,
                 'phone' => $user->phone,
                 'department' => $user->department,
@@ -38,6 +40,14 @@ Route::middleware('auth:sanctum')->group(function () {
     );
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
+    // User Management Routes
+    Route::get('/users', [UserController::class, 'index']);
+    Route::post('/users', [UserController::class, 'store']);
+    Route::get('/users/{id}', [UserController::class, 'show']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::post('/users/{id}/toggle-active', [UserController::class, 'toggleActive']);
+    Route::get('/users/{id}/bookings', [UserController::class, 'bookings']);
 
     // Profile Routes
     Route::post('/profile', [ProfileController::class, 'update']);

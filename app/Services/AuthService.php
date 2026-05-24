@@ -24,7 +24,13 @@ class AuthService
 
         if (!$user || !$user->password || !Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['ข้อมูลผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง (Invalid credentials)'],
+                'email' => ['ข้อมูลผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง'],
+            ]);
+        }
+
+        if (!$user->is_active) {
+            throw ValidationException::withMessages([
+                'email' => ['บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ'],
             ]);
         }
 
@@ -64,6 +70,12 @@ class AuthService
                 'google_refresh_token' => $googleUser->refreshToken,
             ]
         );
+
+        if (!$user->is_active) {
+            throw ValidationException::withMessages([
+                'email' => ['บัญชีนี้ถูกปิดการใช้งาน กรุณาติดต่อผู้ดูแลระบบ'],
+            ]);
+        }
 
         $token = $user->createToken('react-app-token')->plainTextToken;
 
@@ -108,7 +120,7 @@ class AuthService
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();
-                
+
                 $this->logActivity('password_reset_completed', $user);
             }
         );
