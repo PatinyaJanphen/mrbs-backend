@@ -16,7 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'active.user' => EnsureUserIsActive::class,
         ]);
+    })
+    ->withMiddleware(function (Middleware $middleware) {
         $middleware->statefulApi();
+
         $middleware->validateCsrfTokens(except: [
             'api/auth/google/callback',
         ]);
