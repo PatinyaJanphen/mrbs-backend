@@ -25,7 +25,7 @@ class BookingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $bookings,
+            'data' => $bookings,
         ]);
     }
 
@@ -38,7 +38,7 @@ class BookingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $booking,
+            'data' => $booking,
         ]);
     }
 
@@ -51,7 +51,7 @@ class BookingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $bookings,
+            'data' => $bookings,
         ]);
     }
 
@@ -67,7 +67,7 @@ class BookingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $booking->load('resource'),
+            'data' => $booking->load('resource'),
         ], 201);
     }
 
@@ -80,7 +80,7 @@ class BookingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $booking->load('resource'),
+            'data' => $booking->load('resource'),
         ]);
     }
 
@@ -93,7 +93,7 @@ class BookingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $booking->load('resource'),
+            'data' => $booking->load('resource'),
         ]);
     }
 
@@ -109,7 +109,7 @@ class BookingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $booking->load('resource'),
+            'data' => $booking->load('resource'),
         ]);
     }
 
@@ -122,7 +122,7 @@ class BookingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $booking->load('resource'),
+            'data' => $booking->load('resource'),
         ]);
     }
 }

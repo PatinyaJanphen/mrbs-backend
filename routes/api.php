@@ -30,7 +30,7 @@ Route::middleware(['auth:sanctum', 'active.user'])->group(function () {
                 'name' => $user->name,
                 'email' => $user->email,
                 'avatar' => $user->avatar,
-                'role' => (int) $user->role,
+                'role' => $user->role->value,
                 'is_active' => $user->is_active,
                 'company_id' => $user->company_id,
                 'phone' => $user->phone,

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Traits\LogsActivity;
 use Illuminate\Support\Facades\Hash;
@@ -50,15 +51,17 @@ class AuthService
     {
         $email = $googleUser->getEmail();
 
-        // Update or create user
-        $user = User::updateOrCreate(
-            ['email' => $email],
-            [
-                'name'      => $googleUser->getName(),
-                'google_id' => $googleUser->getId(),
-                'avatar'    => $googleUser->getAvatar(),
-            ]
-        );
+        $user = User::firstOrNew(['email' => $email]);
+
+        if (!$user->exists) {
+            $user->role = UserRole::USER->value;
+            $user->is_active = true;
+        }
+
+        $user->name = $googleUser->getName();
+        $user->google_id = $googleUser->getId();
+        $user->avatar = $googleUser->getAvatar();
+        $user->save();
 
         if (!$user->is_active) {
             throw ValidationException::withMessages([
