@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Log extends Model
 {
     protected $fillable = [
-        'company_id',
         'user_id',
         'action',
         'subject_type',
@@ -22,11 +21,6 @@ class Log extends Model
         return [
             'properties' => 'array',
         ];
-    }
-
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
     }
 
     public function user(): BelongsTo

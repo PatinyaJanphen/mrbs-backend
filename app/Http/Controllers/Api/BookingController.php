@@ -5,11 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Http\Requests\Booking\RejectBookingRequest;
-use App\Http\Resources\BookingResource;
 use App\Services\BookingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class BookingController extends Controller
 {
@@ -21,93 +19,97 @@ class BookingController extends Controller
     /**
      * Display a listing of the booking.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): JsonResponse
     {
-        $bookings = $this->bookingService->list(
-            $request->user()->company_id,
-            $request->all()
-        );
+        $bookings = $this->bookingService->list($request->all());
 
-        return BookingResource::collection($bookings);
+        return response()->json([
+            'success' => true,
+            'data'    => $bookings,
+        ]);
     }
 
     /**
-     * Show the form for creating a new booking.
+     * Get a single booking.
      */
-    public function show(Request $request, int $id): BookingResource
+    public function show(Request $request, int $id): JsonResponse
     {
-        $bookings = $this->bookingService->getById(
-            $request->user()->company_id,
-            $id
-        );
+        $booking = $this->bookingService->getById($id);
 
-        return new BookingResource($bookings);
+        return response()->json([
+            'success' => true,
+            'data'    => $booking,
+        ]);
     }
 
     /**
      * Show all my bookings
      */
-    public function myBookings(Request $request): AnonymousResourceCollection
+    public function myBookings(Request $request): JsonResponse
     {
-        $bookings = $this->bookingService->listByUser(
-            $request->user()->company_id,
-            $request->user()->id
-        );
+        $bookings = $this->bookingService->listByUser($request->user()->id);
 
-        return BookingResource::collection($bookings);
+        return response()->json([
+            'success' => true,
+            'data'    => $bookings,
+        ]);
     }
 
     /**
-     * Store a newly created resource in booking.
+     * Store a newly created booking.
      */
-    public function store(StoreBookingRequest $request): BookingResource
+    public function store(StoreBookingRequest $request): JsonResponse
     {
         $booking = $this->bookingService->create(
-            $request->user()->company_id,
             $request->user()->id,
             $request->validated()
         );
 
-        return new BookingResource($booking->load('resource'));
+        return response()->json([
+            'success' => true,
+            'data'    => $booking->load('resource'),
+        ], 201);
     }
 
     /**
      * Cancel a booking
      */
-    public function cancel(Request $request, int $id): BookingResource
+    public function cancel(Request $request, int $id): JsonResponse
     {
-        $booking = $this->bookingService->cancel(
-            $request->user()->company_id,
-            $id
-        );
+        $booking = $this->bookingService->cancel($id);
 
-        return new BookingResource($booking->load('resource'));
+        return response()->json([
+            'success' => true,
+            'data'    => $booking->load('resource'),
+        ]);
     }
 
     /**
      * Approve a booking
      */
-    public function approve(Request $request, int $id): BookingResource
+    public function approve(Request $request, int $id): JsonResponse
     {
-        $booking = $this->bookingService->approve(
-            $request->user()->company_id,
-            $id
-        );
+        $booking = $this->bookingService->approve($id);
 
-        return new BookingResource($booking->load('resource'));
+        return response()->json([
+            'success' => true,
+            'data'    => $booking->load('resource'),
+        ]);
     }
 
     /**
      * Reject a booking
      */
-    public function reject(RejectBookingRequest $request, int $id): BookingResource
+    public function reject(RejectBookingRequest $request, int $id): JsonResponse
     {
         $booking = $this->bookingService->reject(
-            $request->user()->company_id,
             $id,
             $request->validated()['reject_reason']
         );
 
-        return new BookingResource($booking->load('resource'));
+        return response()->json([
+            'success' => true,
+            'data'    => $booking->load('resource'),
+        ]);
     }
 }

@@ -13,7 +13,6 @@ class Resource extends Model
     use HasFactory, SoftDeletes, \App\Traits\UserStamps;
 
     protected $fillable = [
-        'company_id',
         'name',
         'description',
         'capacity',
@@ -29,11 +28,6 @@ class Resource extends Model
             'is_active' => 'boolean',
             'requires_approval' => 'boolean',
         ];
-    }
-
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
     }
 
     public function operatingHours(): HasMany

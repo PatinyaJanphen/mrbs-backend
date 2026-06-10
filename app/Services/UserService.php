@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Traits\LogsActivity;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -17,8 +18,7 @@ class UserService
     public function list(User $actor, array $filters = []): LengthAwarePaginator
     {
         $query = User::query()
-            ->withCount('bookings')
-            ->when(!$this->isSuperAdmin($actor), fn($query) => $query->where('company_id', $actor->company_id));
+            ->withCount('bookings');
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -45,7 +45,6 @@ class UserService
     {
         return User::query()
             ->withCount('bookings')
-            ->when(!$this->isSuperAdmin($actor), fn($query) => $query->where('company_id', $actor->company_id))
             ->findOrFail($id);
     }
 
@@ -53,15 +52,10 @@ class UserService
     {
         $this->ensureRoleCanBeManaged($actor, (int) $data['role']);
 
-        $companyId = $this->isSuperAdmin($actor)
-            ? ($data['company_id'] ?? null)
-            : $actor->company_id;
-
         $password = $data['password'] ?? str()->random(16);
 
-        return DB::transaction(function () use ($companyId, $password, $data) {
+        return DB::transaction(function () use ($password, $data) {
             $user = User::create([
-                'company_id' => $companyId,
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'google_id' => null,
@@ -97,7 +91,6 @@ class UserService
 
         return DB::transaction(function () use ($actor, $user, $data) {
             $user->update([
-                'company_id' => $this->isSuperAdmin($actor) ? ($data['company_id'] ?? $user->company_id) : $user->company_id,
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?? null,
@@ -143,10 +136,44 @@ class UserService
         $user = $this->getById($actor, $id);
 
         return Booking::with('resource')
-            ->where('company_id', $user->company_id)
             ->where('user_id', $user->id)
             ->latest()
             ->paginate($filters['per_page'] ?? 10);
+    }
+
+    public function updateProfile(User $user, array $data, ?UploadedFile $avatar = null): User
+    {
+        $user->name       = $data['name'] ?? $user->name;
+        $user->phone      = $data['phone'] ?? null;
+        $user->department = $data['department'] ?? null;
+
+        if ($avatar) {
+            $filename = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
+            $path = public_path('uploads/avatars');
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
+            $avatar->move($path, $filename);
+            $user->avatar = url('uploads/avatars/' . $filename);
+        }
+
+        $user->save();
+
+        $this->logActivity('profile_updated', $user, [
+            'name'       => $user->name,
+            'phone'      => $user->phone,
+            'department' => $user->department,
+        ], $user);
+
+        return $user;
+    }
+
+    public function updatePassword(User $user, string $newPassword): void
+    {
+        $user->password = Hash::make($newPassword);
+        $user->save();
+
+        $this->logActivity('password_changed', $user, [], $user);
     }
 
     private function ensureUserCanBeManaged(User $actor, User $target): void

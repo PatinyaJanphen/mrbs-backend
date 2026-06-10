@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\Company;
 use App\Traits\LogsActivity;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -50,19 +49,11 @@ class AuthService
     public function handleGoogleCallback(SocialiteUser $googleUser): array
     {
         $email = $googleUser->getEmail();
-        $domain = explode('@', $email)[1];
-
-        // Ensure company exists based on domain
-        $company = Company::firstOrCreate(
-            ['domain' => $domain],
-            ['name' => ($domain === 'gmail.com' ? 'Guest Workspace' : ucfirst(explode('.', $domain)[0]) . ' Workspace')]
-        );
 
         // Update or create user
         $user = User::updateOrCreate(
             ['email' => $email],
             [
-                'company_id' => $company->id,
                 'name' => $googleUser->getName(),
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),

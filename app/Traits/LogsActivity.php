@@ -21,7 +21,6 @@ trait LogsActivity
         $user = $user ?: auth()->user();
 
         Log::create([
-            'company_id' => $user && isset($user->company_id) ? $user->company_id : null,
             'user_id' => $user ? $user->id : null,
             'action' => $action,
             'subject_type' => $subject ? get_class($subject) : null,

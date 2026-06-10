@@ -36,11 +36,6 @@ class UpdateUserRequest extends FormRequest
                 User::ROLE_STAFF,
                 User::ROLE_USER,
             ])],
-            'company_id' => [
-                $this->user()?->role === User::ROLE_SUPER_ADMIN ? 'required' : 'nullable',
-                'integer',
-                Rule::exists('companies', 'id'),
-            ],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

@@ -11,23 +11,12 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        // 1. Table companies
-        Schema::create('companies', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('domain')->nullable();
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('updated_by')->nullable();
-            $table->timestamps();
-        });
-
-        // 2. Table users
+        // 1. Table users
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('google_id')->unique();
+            $table->string('google_id')->unique()->nullable();
             $table->string('avatar')->nullable();
             $table->text('google_access_token')->nullable();
             $table->text('google_refresh_token')->nullable();
@@ -37,16 +26,9 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        // Add foreign keys for companies table now that users table exists
-        Schema::table('companies', function (Blueprint $table) {
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
-        });
-
-        // 3. Table resources
+        // 2. Table resources
         Schema::create('resources', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->integer('capacity')->nullable();
@@ -62,7 +44,7 @@ return new class extends Migration {
         // Create GIN Index for searching data in JSONB
         DB::statement('CREATE INDEX resources_equipment_gin ON resources USING GIN (equipment)');
 
-        // 4. Table resource_operating_hours
+        // 3. Table resource_operating_hours
         Schema::create('resource_operating_hours', function (Blueprint $table) {
             $table->id();
             $table->foreignId('resource_id')->constrained('resources')->onDelete('cascade');
@@ -72,10 +54,9 @@ return new class extends Migration {
             $table->unique(['resource_id', 'day_of_week']);
         });
 
-        // 5. Table bookings
+        // 4. Table bookings
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('resource_id')->constrained('resources')->onDelete('cascade');
             $table->string('title');
@@ -95,7 +76,7 @@ return new class extends Migration {
         // Enforce Check Constraint at DB level: End time must be greater than start time
         DB::statement('ALTER TABLE bookings ADD CONSTRAINT check_end_time_greater_than_start_time CHECK (end_time > start_time)');
 
-        // 6. Table booking_attendees
+        // 5. Table booking_attendees
         Schema::create('booking_attendees', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_id')->constrained('bookings')->onDelete('cascade');
@@ -107,14 +88,13 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        // 7. Table logs
+        // 6. Table logs
         Schema::create('logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('action');
-            $table->string('subject_type');
-            $table->unsignedBigInteger('subject_id');
+            $table->string('subject_type')->nullable();
+            $table->unsignedBigInteger('subject_id')->nullable();
             $table->jsonb('properties')->nullable();
             $table->string('ip_address')->nullable();
             $table->timestamps();
@@ -128,7 +108,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('activity_logs');
         Schema::dropIfExists('booking_attendees');
         Schema::dropIfExists('bookings');
         Schema::dropIfExists('resource_operating_hours');
@@ -136,7 +115,7 @@ return new class extends Migration {
         DB::statement('DROP INDEX IF EXISTS resources_equipment_gin');
         Schema::dropIfExists('resources');
 
+        Schema::dropIfExists('logs');
         Schema::dropIfExists('users');
-        Schema::dropIfExists('companies');
     }
 };

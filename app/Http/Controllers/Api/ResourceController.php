@@ -15,14 +15,11 @@ class ResourceController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Display a list of the resource.
      */
     public function index(Request $request)
     {
-        $resources = $this->resourceService->list(
-            $request->user()->company_id,
-            $request->all()
-        );
+        $resources = $this->resourceService->list($request->all());
 
         return response()->json([
             'success' => true,
@@ -31,14 +28,11 @@ class ResourceController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for create a new resource.
      */
     public function show(Request $request, int $id)
     {
-        $resource = $this->resourceService->getById(
-            $request->user()->company_id,
-            $id
-        );
+        $resource = $this->resourceService->getById($id);
 
         return response()->json([
             'success' => true,
@@ -47,14 +41,11 @@ class ResourceController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource.
      */
     public function store(StoreResourceRequest $request)
     {
-        $resource = $this->resourceService->create(
-            $request->user()->company_id,
-            $request->validated()
-        );
+        $resource = $this->resourceService->create($request->validated());
 
         return response()->json([
             'success' => true,
@@ -63,12 +54,11 @@ class ResourceController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified resource.
      */
     public function update(StoreResourceRequest $request, int $id)
     {
         $resource = $this->resourceService->update(
-            $request->user()->company_id,
             $id,
             $request->validated()
         );

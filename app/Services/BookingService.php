@@ -17,22 +17,14 @@ class BookingService
 {
     use LogsActivity;
 
-    public function getById(?int $companyId, int $id): Booking
+    public function getById(int $id): Booking
     {
-        $query = Booking::with(['resource', 'user']);
-        if ($companyId !== null) {
-            $query->where('company_id', $companyId);
-        }
-        return $query->findOrFail($id);
+        return Booking::with(['resource', 'user'])->findOrFail($id);
     }
 
-    public function list(?int $companyId, array $filters = []): LengthAwarePaginator
+    public function list(array $filters = []): LengthAwarePaginator
     {
         $query = Booking::with(['resource', 'user']);
-            
-        if ($companyId !== null) {
-            $query->where('company_id', $companyId);
-        }
 
         if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -45,30 +37,21 @@ class BookingService
         return $query->latest()->paginate($filters['per_page'] ?? 20);
     }
 
-    public function listByUser(?int $companyId, int $userId): LengthAwarePaginator
+    public function listByUser(int $userId): LengthAwarePaginator
     {
-        $query = Booking::with('resource')
-            ->where('user_id', $userId);
-
-        if ($companyId !== null) {
-            $query->where('company_id', $companyId);
-        }
-
-        return $query->latest()->paginate(20);
+        return Booking::with('resource')
+            ->where('user_id', $userId)
+            ->latest()
+            ->paginate(20);
     }
 
-    public function create(?int $companyId, int $userId, array $data): Booking
+    public function create(int $userId, array $data): Booking
     {
-        $resourceQuery = Resource::query();
-        if ($companyId !== null) {
-            $resourceQuery->where('company_id', $companyId);
-        }
-        $resource = $resourceQuery->findOrFail($data['resource_id']);
+        $resource = Resource::findOrFail($data['resource_id']);
 
         $this->checkCollision($data['resource_id'], $data['start_time'], $data['end_time']);
 
         $booking = Booking::create([
-            'company_id' => $companyId ?? $resource->company_id,
             'user_id' => $userId,
             'resource_id' => $data['resource_id'],
             'title' => $data['title'],
@@ -116,14 +99,10 @@ class BookingService
         }
     }
 
-    public function approve(?int $companyId, int $bookingId): Booking
+    public function approve(int $bookingId): Booking
     {
-        $query = Booking::query();
-        if ($companyId !== null) {
-            $query->where('company_id', $companyId);
-        }
-        $booking = $query->findOrFail($bookingId);
-        
+        $booking = Booking::findOrFail($bookingId);
+
         Gate::authorize('approve', $booking);
 
         // Final check for collisions before approving
@@ -139,21 +118,17 @@ class BookingService
         return $booking;
     }
 
-    public function reject(?int $companyId, int $bookingId, string $rejectReason): Booking
+    public function reject(int $bookingId, string $rejectReason): Booking
     {
-        $query = Booking::query();
-        if ($companyId !== null) {
-            $query->where('company_id', $companyId);
-        }
-        $booking = $query->findOrFail($bookingId);
-        
+        $booking = Booking::findOrFail($bookingId);
+
         Gate::authorize('reject', $booking);
-        
+
         $booking->update([
             'status' => BookingStatus::REJECTED,
             'reject_reason' => $rejectReason
         ]);
-        
+
         $this->logActivity('booking_rejected', $booking, [
             'reject_reason' => $rejectReason
         ]);
@@ -163,13 +138,9 @@ class BookingService
         return $booking;
     }
 
-    public function cancel(?int $companyId, int $bookingId): Booking
+    public function cancel(int $bookingId): Booking
     {
-        $query = Booking::query();
-        if ($companyId !== null) {
-            $query->where('company_id', $companyId);
-        }
-        $booking = $query->findOrFail($bookingId);
+        $booking = Booking::findOrFail($bookingId);
 
         Gate::authorize('cancel', $booking);
 

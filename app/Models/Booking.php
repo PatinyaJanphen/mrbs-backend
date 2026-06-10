@@ -14,7 +14,6 @@ class Booking extends Model
     use HasFactory, SoftDeletes, \App\Traits\UserStamps;
 
     protected $fillable = [
-        'company_id',
         'user_id',
         'resource_id',
         'title',
@@ -33,11 +32,6 @@ class Booking extends Model
             'end_time' => 'datetime',
             'status' => BookingStatus::class,
         ];
-    }
-
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
     }
 
     public function user(): BelongsTo
