@@ -54,3 +54,14 @@ docker-compose exec app php artisan migrate
 ```
 
 ---
+
+## Live Demo
+
+- **Visit the website.:** [Live Demo](https://mrbs-testsite.netlify.app)
+
+### Demo Account
+
+```text
+Username: admin@demo.com
+Password: password
+```
