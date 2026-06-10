@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\User;
 
@@ -36,7 +37,7 @@ class BookingPolicy
      */
     public function approve(User $user, Booking $booking): bool
     {
-        return $user->role <= User::ROLE_ADMIN;
+        return $user->role->value <= UserRole::ADMIN->value;
     }
 
     /**
@@ -44,7 +45,7 @@ class BookingPolicy
      */
     public function reject(User $user, Booking $booking): bool
     {
-        return $user->role <= User::ROLE_ADMIN;
+        return $user->role->value <= UserRole::ADMIN->value;
     }
 
     /**
@@ -53,6 +54,6 @@ class BookingPolicy
     public function cancel(User $user, Booking $booking): bool
     {
         // Can cancel if they are the owner OR if they are an admin
-        return $user->id === $booking->user_id || $user->role <= User::ROLE_ADMIN;
+        return $user->id === $booking->user_id || $user->role->value <= UserRole::ADMIN->value;
     }
 }

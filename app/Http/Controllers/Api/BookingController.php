@@ -112,4 +112,17 @@ class BookingController extends Controller
             'data'    => $booking->load('resource'),
         ]);
     }
+
+    /**
+     * Check in a booking
+     */
+    public function checkIn(Request $request, int $id): JsonResponse
+    {
+        $booking = $this->bookingService->checkIn($id, $request->user()->id);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $booking->load('resource'),
+        ]);
+    }
 }

@@ -71,4 +71,5 @@ Route::middleware(['auth:sanctum', 'active.user'])->group(function () {
     Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
     Route::post('/bookings/{booking}/approve', [BookingController::class, 'approve']);
     Route::post('/bookings/{booking}/reject', [BookingController::class, 'reject']);
+    Route::post('/bookings/{booking}/check-in', [BookingController::class, 'checkIn']);
 });

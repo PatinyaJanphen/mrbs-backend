@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\User;
 use App\Traits\LogsActivity;
@@ -68,7 +69,7 @@ class UserService
             ]);
 
             $this->logActivity('user_created', $user, [
-                'role' => $user->role,
+                'role' => $user->role->value,
                 'is_active' => $user->is_active,
             ]);
 
@@ -100,7 +101,7 @@ class UserService
             ]);
 
             $this->logActivity('user_updated', $user, [
-                'role' => $user->role,
+                'role' => $user->role->value,
                 'is_active' => $user->is_active,
             ]);
 
@@ -143,8 +144,8 @@ class UserService
 
     public function updateProfile(User $user, array $data, ?UploadedFile $avatar = null): User
     {
-        $user->name       = $data['name'] ?? $user->name;
-        $user->phone      = $data['phone'] ?? null;
+        $user->name = $data['name'] ?? $user->name;
+        $user->phone = $data['phone'] ?? null;
         $user->department = $data['department'] ?? null;
 
         if ($avatar) {
@@ -160,8 +161,8 @@ class UserService
         $user->save();
 
         $this->logActivity('profile_updated', $user, [
-            'name'       => $user->name,
-            'phone'      => $user->phone,
+            'name' => $user->name,
+            'phone' => $user->phone,
             'department' => $user->department,
         ], $user);
 
@@ -178,7 +179,7 @@ class UserService
 
     private function ensureUserCanBeManaged(User $actor, User $target): void
     {
-        if (!$this->isSuperAdmin($actor) && $target->role === User::ROLE_SUPER_ADMIN) {
+        if (!$this->isSuperAdmin($actor) && $target->role->value === UserRole::SUPER_ADMIN->value) {
             throw ValidationException::withMessages([
                 'role' => ['ไม่มีสิทธิ์จัดการผู้ดูแลระบบสูงสุด'],
             ]);
@@ -187,7 +188,7 @@ class UserService
 
     private function ensureRoleCanBeManaged(User $actor, int $role): void
     {
-        if (!$this->isSuperAdmin($actor) && $role === User::ROLE_SUPER_ADMIN) {
+        if (!$this->isSuperAdmin($actor) && $role === UserRole::SUPER_ADMIN->value) {
             throw ValidationException::withMessages([
                 'role' => ['ไม่มีสิทธิ์กำหนดบทบาทผู้ดูแลระบบสูงสุด'],
             ]);
@@ -196,6 +197,6 @@ class UserService
 
     private function isSuperAdmin(User $actor): bool
     {
-        return (int) $actor->role === User::ROLE_SUPER_ADMIN;
+        return $actor->role->value === UserRole::SUPER_ADMIN->value;
     }
 }

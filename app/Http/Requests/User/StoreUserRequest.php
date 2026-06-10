@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -13,7 +14,7 @@ class StoreUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->role <= User::ROLE_ADMIN;
+        return $this->user()?->role->value <= UserRole::ADMIN->value;
     }
 
     /**
@@ -29,12 +30,7 @@ class StoreUserRequest extends FormRequest
             'password' => ['nullable', 'string', 'min:8'],
             'phone' => ['nullable', 'string', 'max:20'],
             'department' => ['nullable', 'string', 'max:100'],
-            'role' => ['required', 'integer', Rule::in([
-                User::ROLE_SUPER_ADMIN,
-                User::ROLE_ADMIN,
-                User::ROLE_STAFF,
-                User::ROLE_USER,
-            ])],
+            'role' => ['required', 'integer', Rule::enum(UserRole::class)],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

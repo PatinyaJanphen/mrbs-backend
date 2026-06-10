@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\Resource;
+use App\Models\User;
 use App\Notifications\BookingConfirmationNotification;
 use App\Notifications\BookingRejectionNotification;
 use Carbon\Carbon;
@@ -148,6 +150,53 @@ class BookingService
 
         $this->logActivity('booking_cancelled', $booking, [
             'id' => $bookingId,
+        ]);
+
+        return $booking;
+    }
+
+    public function checkIn(int $bookingId, int $userId): Booking
+    {
+        $booking = Booking::findOrFail($bookingId);
+
+        $user = User::findOrFail($userId);
+        $isOwner = $booking->user_id === $userId;
+        $isAdmin = $user->role->value <= UserRole::ADMIN->value;
+
+        if (!$isOwner && !$isAdmin) {
+            throw ValidationException::withMessages([
+                'booking' => ['คุณไม่มีสิทธิ์ในการเช็คอินการจองนี้'],
+            ]);
+        }
+
+        if ($booking->status !== BookingStatus::APPROVED) {
+            throw ValidationException::withMessages([
+                'booking' => ['การจองนี้ไม่ได้อยู่ในสถานะที่สามารถเช็คอินได้'],
+            ]);
+        }
+
+        if ($booking->checked_in_at !== null) {
+            throw ValidationException::withMessages([
+                'booking' => ['การจองนี้ได้ทำการเช็คอินไปแล้ว'],
+            ]);
+        }
+
+        $now = Carbon::now();
+        $startTime = Carbon::parse($booking->start_time);
+
+        if ($now->lt($startTime->copy()->subMinutes(15))) {
+            throw ValidationException::withMessages([
+                'booking' => ['ยังไม่ถึงเวลาเช็คอิน (สามารถเช็คอินได้ก่อนเวลาเริ่ม 15 นาที)'],
+            ]);
+        }
+
+        $booking->update([
+            'checked_in_at' => $now
+        ]);
+
+        $this->logActivity('booking_checked_in', $booking, [
+            'id' => $bookingId,
+            'checked_in_at' => $now,
         ]);
 
         return $booking;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
@@ -25,7 +26,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $users,
+            'data' => $users,
         ]);
     }
 
@@ -37,7 +38,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $user,
+            'data' => $user,
         ]);
     }
 
@@ -47,7 +48,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $user,
+            'data' => $user,
         ], 201);
     }
 
@@ -57,7 +58,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $user,
+            'data' => $user,
         ]);
     }
 
@@ -69,7 +70,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $user,
+            'data' => $user,
         ]);
     }
 
@@ -81,12 +82,12 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $bookings,
+            'data' => $bookings,
         ]);
     }
 
     private function authorizeManageUsers(Request $request): void
     {
-        abort_unless($request->user()?->role <= User::ROLE_ADMIN, 403);
+        abort_unless($request->user()?->role->value <= UserRole::ADMIN->value, 403);
     }
 }

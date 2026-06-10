@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,10 +11,6 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    public const ROLE_SUPER_ADMIN = 0;
-    public const ROLE_ADMIN = 1;
-    public const ROLE_STAFF = 2;
-    public const ROLE_USER = 3;
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, \App\Traits\UserStamps;
@@ -41,7 +38,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'role' => 'integer',
+            'role' => UserRole::class,
             'is_active' => 'boolean',
             'password' => 'hashed',
         ];

@@ -34,7 +34,7 @@ class EmailAuthController extends Controller
                 'name' => $result['user']->name,
                 'email' => $result['user']->email,
                 'avatar' => $result['user']->avatar,
-                'role' => (int) $result['user']->role,
+                'role' => $result['user']->role->value,
                 'is_active' => $result['user']->is_active,
                 'phone' => $result['user']->phone,
                 'department' => $result['user']->department,

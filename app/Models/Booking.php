@@ -23,6 +23,7 @@ class Booking extends Model
         'approved_by',
         'google_event_id',
         'reject_reason',
+        'checked_in_at',
     ];
 
     protected function casts(): array
@@ -31,6 +32,7 @@ class Booking extends Model
             'start_time' => 'datetime',
             'end_time' => 'datetime',
             'status' => BookingStatus::class,
+            'checked_in_at' => 'datetime',
         ];
     }
 
