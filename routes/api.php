@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\EmailAuthController;
 
@@ -32,7 +31,6 @@ Route::middleware(['auth:sanctum', 'active.user'])->group(function () {
                 'avatar' => $user->avatar,
                 'role' => $user->role->value,
                 'is_active' => $user->is_active,
-                'company_id' => $user->company_id,
                 'phone' => $user->phone,
                 'department' => $user->department,
             ];
@@ -52,10 +50,6 @@ Route::middleware(['auth:sanctum', 'active.user'])->group(function () {
     // Profile Routes
     Route::post('/profile', [ProfileController::class, 'update']);
     Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
-
-    // Company Routes
-    Route::get('/companies', [CompanyController::class, 'index']);
-    Route::post('/companies', [CompanyController::class, 'store']);
 
     // Resource (Room) Routes
     Route::get('/rooms', [ResourceController::class, 'index']);
