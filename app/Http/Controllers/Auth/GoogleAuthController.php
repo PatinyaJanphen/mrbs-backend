@@ -32,7 +32,8 @@ class GoogleAuthController extends Controller
             return redirect()->away(env('FRONTEND_URL') . '/auth/callback?token=' . $result['token']);
 
         } catch (\Exception $e) {
-            return redirect(env('FRONTEND_URL') . '/login?error=google_auth_failed');
+            $frontendUrl = env('FRONTEND_URL', 'https://mrbs-testsite.netlify.app');
+            return redirect($frontendUrl . '/login?error=google_auth_failed');
         }
     }
 }
