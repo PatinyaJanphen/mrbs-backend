@@ -17,7 +17,7 @@ class GoogleAuthController extends Controller
     public function redirect()
     {
         return Socialite::driver('google')
-            ->scopes(['https://www.googleapis.com/auth/calendar.events'])
+            ->scopes(['openid', 'email', 'profile'])
             ->stateless()
             ->redirect();
     }
@@ -26,7 +26,7 @@ class GoogleAuthController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
-            
+
             $result = $this->authService->handleGoogleCallback($googleUser);
 
             return redirect()->away(env('FRONTEND_URL') . '/auth/callback?token=' . $result['token']);

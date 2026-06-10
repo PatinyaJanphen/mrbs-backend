@@ -54,11 +54,9 @@ class AuthService
         $user = User::updateOrCreate(
             ['email' => $email],
             [
-                'name' => $googleUser->getName(),
+                'name'      => $googleUser->getName(),
                 'google_id' => $googleUser->getId(),
-                'avatar' => $googleUser->getAvatar(),
-                'google_access_token' => $googleUser->token,
-                'google_refresh_token' => $googleUser->refreshToken,
+                'avatar'    => $googleUser->getAvatar(),
             ]
         );
 
