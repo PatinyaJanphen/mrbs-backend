@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'active.user' => EnsureUserIsActive::class,
         ]);
         $middleware->statefulApi();
+        $middleware->validateCsrfTokens(except: [
+            'api/auth/google/callback',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
